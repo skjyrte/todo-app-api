@@ -2,29 +2,35 @@ import express from "express";
 const router = express.Router();
 import ToDo from "../models/todo.js";
 
+function createResponse(success, message, data = undefined) {
+  return { success: success, message: message, data: data };
+}
+
 //view route
 router.get("/", async (req, res) => {
   try {
     const toDos = await ToDo.find({});
-    res.send({ toDos: toDos });
+    res.status(200).send(createResponse(true, "GET Request Called", toDos));
     console.log("data sent successfully");
   } catch {
-    console.error("error during display data");
+    //console.error("error during display data");
+    res.status(500).send(createResponse(false, "Internal Server Fetch Error"));
   }
 });
 
 //create route
 router.post("/", async (req, res) => {
-  console.log(req.body);
   const toDo = new ToDo({
     task: req.body.task,
     completed: req.body.completed,
   });
   try {
     await toDo.save();
-    console.log("created successfully");
+    //console.log("created successfully");
+    res.status(200).send(createResponse(true, "POST Request Called"));
   } catch {
-    console.error("error saving ");
+    //console.error("error saving");
+    res.status(500).send(createResponse(false, "Internal Server Create Error"));
   }
 });
 
@@ -35,12 +41,19 @@ router.put("/:id", async (req, res) => {
     toDo = await ToDo.findById(req.params.id);
     toDo.task = req.body.task;
     await toDo.save();
-    console.log("updated successfully");
+    //console.log("updated successfully");
+    res.status(200).send(createResponse(true, "PUT Request Called"));
   } catch {
     if (toDo == null) {
-      console.error("todo does not exist");
+      //console.error("todo does not exist");
+      res
+        .status(404)
+        .send(createResponse(false, "ToDo Does Not Exist In Database"));
     } else {
-      console.error("error updating todo");
+      //console.error("error updating todo");
+      res
+        .status(500)
+        .send(createResponse(false, "Internal Server Update Error"));
     }
   }
 });
@@ -49,14 +62,23 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   let toDo;
   try {
+    //throw new Error("ABCD");
     toDo = await ToDo.findById(req.params.id);
     await toDo.deleteOne();
-    console.log("deleted successfully");
+    //console.log("success: DELETE Request Called");
+    res.status(200).send(createResponse(true, "DELETE Request Called"));
+    console.log(createResponse(true, "DELETE Request Called"));
   } catch {
     if (toDo == null) {
-      console.error("todo does not exist");
+      //console.error("error: Todo Does Not Exist");
+      res
+        .status(404)
+        .send(createResponse(false, "ToDo Does Not Exist In Database"));
     } else {
-      console.error("error deleting todo");
+      //console.error("error: Error Deleting ToDo");
+      res
+        .status(500)
+        .send(createResponse(false, "Internal Server Deleting Error"));
     }
   }
 });
