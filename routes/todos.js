@@ -2,8 +2,12 @@ import express from "express";
 const router = express.Router();
 import ToDo from "../models/todo.js";
 
-function createResponse(success, message, data = undefined) {
-  return { success: success, message: message, data: data };
+function createResponse(success, message, data) {
+  if (data === undefined) {
+    return { success: success, message: message };
+  } else {
+    return { success: success, message: message, data: data };
+  }
 }
 
 //view route
