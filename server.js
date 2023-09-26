@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import cors from "cors";
 
-dotenv.config();
+dotenv.config({ path: ".env.local" });
 
 const app = express();
 const port = 4000;
@@ -22,6 +22,6 @@ db.once("open", () => console.log("Connected to Mongoose"));
 import toDosRouter from "./routes/todos.js";
 app.use("/todos", toDosRouter);
 
-app.listen(port, () => {
+app.listen(process.env.PORT || port, () => {
   console.log(`App is running at port: ${port}`);
 });
