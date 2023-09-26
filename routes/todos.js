@@ -26,8 +26,9 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   const toDo = new ToDo({
     task: req.body.task,
-    completed: req.body.completed,
+    completed: false,
   });
+  console.log(req.body);
   try {
     await toDo.save();
     //console.log("created successfully");
@@ -41,6 +42,7 @@ router.post("/", async (req, res) => {
 //view route
 router.put("/:id", async (req, res) => {
   let toDo;
+
   try {
     toDo = await ToDo.findById(req.params.id);
     toDo.task = req.body.task;
@@ -54,7 +56,6 @@ router.put("/:id", async (req, res) => {
         .status(404)
         .send(createResponse(false, "ToDo Does Not Exist In Database"));
     } else {
-      //console.error("error updating todo");
       res
         .status(500)
         .send(createResponse(false, "Internal Server Update Error"));
