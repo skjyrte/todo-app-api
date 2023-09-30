@@ -39,17 +39,29 @@ router.post("/", async (req, res) => {
   }
 });
 
-//view route
-router.put("/:id", async (req, res) => {
-  let toDo;
+//modify route
+router.patch("/:id", async (req, res) => {
+  const editedTodo = req.body.task;
+  const editedCompleted = req.body.completed;
+  console.log(editedTodo);
+  console.log(editedCompleted);
 
+  let toDo;
   try {
     toDo = await ToDo.findById(req.params.id);
-    toDo.task = req.body.task;
+
+    if (editedTodo !== undefined && editedCompleted === undefined) {
+      toDo.task = req.body.task;
+    } else if (editedTodo === undefined && editedCompleted !== undefined) {
+      toDo.completed = req.body.completed;
+    } else {
+      throw new Error("PATCH: error with input data");
+    }
     await toDo.save();
     //console.log("updated successfully");
-    res.status(200).send(createResponse(true, "PUT Request Called"));
-  } catch {
+    res.status(200).send(createResponse(true, "PATCH Request Called"));
+  } catch (e) {
+    console.log(e);
     if (toDo == null) {
       //console.error("todo does not exist");
       res
