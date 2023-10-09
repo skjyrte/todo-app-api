@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    #image: nodejs:17-alpine
+    container_name: todoApi
+    #    env_file: ./.env
+    environment:
+      - DATABASE_URL=mongodb://mongodb:27017/todo-app-api
+    ports:
+      - "4000:4000"
+    #    networks:
+    #     - some-multicontainer-app
+    depends_on:
+      - mongodb
+    volumes:
+      - ./:/app
+      - /app/node_modules
+
+  mongodb:
+    image: mongo:7.0.2-jammy
+    container_name: todoDB
+    ##    env_file: ./.env
+    environment:
+      - DATABASE_URL=mongodb://mongodb:27017/todo-app-api
+    ports:
+      - "27017:27017"
+    #    networks:
+    #      - some-multicontainer-app
+    volumes:
+      - mongo-data:/data/db
+
+#networks: -> if we would create apps in different containers, for example react app
+#  some-multicontainer-app:
+#    driver: bridge
+volumes:
+  mongo-data:
+    driver: local

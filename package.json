@@ -4,7 +4,7 @@
   "description": "��#\u0000 \u0000t\u0000o\u0000d\u0000o\u0000-\u0000a\u0000p\u0000p\u0000-\u0000a\u0000p\u0000i\u0000\r\u0000 \u0000",
   "main": "server.js",
   "scripts": {
-    "devStart": "nodemon server.js"
+    "devStart": "nodemon -L server.js"
   },
   "repository": {
     "type": "git",

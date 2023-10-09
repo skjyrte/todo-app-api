@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import bodyParser from "body-parser";
 import cors from "cors";
 
-dotenv.config({ path: ".env.local" });
+dotenv.config({});
 
 const app = express();
 const port = 4000;
