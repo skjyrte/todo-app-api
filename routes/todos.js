@@ -30,9 +30,11 @@ router.post("/", async (req, res) => {
   });
   console.log(req.body);
   try {
-    await toDo.save();
+    const getCreatedTodo = await toDo.save();
     //console.log("created successfully");
-    res.status(200).send(createResponse(true, "POST Request Called"));
+    res
+      .status(200)
+      .send(createResponse(true, "POST Request Called", getCreatedTodo));
   } catch {
     //console.error("error saving");
     res.status(500).send(createResponse(false, "Internal Server Create Error"));
@@ -57,9 +59,11 @@ router.patch("/:id", async (req, res) => {
     } else {
       throw new Error("PATCH: error with input data");
     }
-    await toDo.save();
+    const getModifiedTodo = await toDo.save();
     //console.log("updated successfully");
-    res.status(200).send(createResponse(true, "PATCH Request Called"));
+    res
+      .status(200)
+      .send(createResponse(true, "PATCH Request Called", getModifiedTodo));
   } catch (e) {
     console.log(e);
     if (toDo == null) {
