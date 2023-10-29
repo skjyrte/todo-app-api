@@ -12,12 +12,22 @@ function createResponse(success, message, data) {
 
 //view route
 router.get("/", async (req, res) => {
+  const page = parseInt(req.query.page);
+  const limit = 2;
+
+  const queryIndex = (page - 1) * limit;
+  const currentData = {};
+  console.log(queryIndex);
   try {
-    const toDos = await ToDo.find({});
-    res.status(200).send(createResponse(true, "GET Request Called", toDos));
-    console.log("data sent successfully");
+    currentData.documentCount = await ToDo.find().count();
+    currentData.currentData = await ToDo.find()
+      .limit(limit)
+      .skip(queryIndex)
+      .exec();
+    res
+      .status(200)
+      .send(createResponse(true, "GET Request Called", currentData));
   } catch {
-    //console.error("error during display data");
     res.status(500).send(createResponse(false, "Internal Server Fetch Error"));
   }
 });
@@ -31,12 +41,11 @@ router.post("/", async (req, res) => {
   console.log(req.body);
   try {
     const getCreatedTodo = await toDo.save();
-    //console.log("created successfully");
+
     res
       .status(200)
       .send(createResponse(true, "POST Request Called", getCreatedTodo));
   } catch {
-    //console.error("error saving");
     res.status(500).send(createResponse(false, "Internal Server Create Error"));
   }
 });
@@ -60,14 +69,13 @@ router.patch("/:id", async (req, res) => {
       throw new Error("PATCH: error with input data");
     }
     const getModifiedTodo = await toDo.save();
-    //console.log("updated successfully");
+
     res
       .status(200)
       .send(createResponse(true, "PATCH Request Called", getModifiedTodo));
   } catch (e) {
     console.log(e);
     if (toDo == null) {
-      //console.error("todo does not exist");
       res
         .status(404)
         .send(createResponse(false, "ToDo Does Not Exist In Database"));
@@ -83,20 +91,17 @@ router.patch("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   let toDo;
   try {
-    //throw new Error("ABCD");
     toDo = await ToDo.findById(req.params.id);
     await toDo.deleteOne();
-    //console.log("success: DELETE Request Called");
+
     res.status(200).send(createResponse(true, "DELETE Request Called"));
     console.log(createResponse(true, "DELETE Request Called"));
   } catch {
     if (toDo == null) {
-      //console.error("error: Todo Does Not Exist");
       res
         .status(404)
         .send(createResponse(false, "ToDo Does Not Exist In Database"));
     } else {
-      //console.error("error: Error Deleting ToDo");
       res
         .status(500)
         .send(createResponse(false, "Internal Server Deleting Error"));
