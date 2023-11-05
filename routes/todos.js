@@ -15,12 +15,23 @@ router.get("/", async (req, res) => {
   const page = parseInt(req.query.page);
   const limit = 2;
 
+  const filter = ((query) => {
+    if (query === "Active") return { completed: false };
+    if (query === "Completed") return { completed: true };
+    else return {};
+  })(String(req.query.filter));
+
   const queryIndex = (page - 1) * limit;
   const currentData = {};
   console.log(queryIndex);
+  console.log(filter);
+  console.log(String(req.query.filter));
   try {
-    currentData.documentCount = await ToDo.find().count();
-    currentData.currentData = await ToDo.find()
+    currentData.documentCount = await ToDo.find(filter).count();
+    /*     currentData.activeDocumentsCount = await ToDo.find({
+      completed: true,
+    }).count(); */
+    currentData.currentData = await ToDo.find(filter)
       .limit(limit)
       .skip(queryIndex)
       .exec();
