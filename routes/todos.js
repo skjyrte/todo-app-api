@@ -23,14 +23,12 @@ router.get("/", async (req, res) => {
 
   const queryIndex = (page - 1) * limit;
   const currentData = {};
-  console.log(queryIndex);
-  console.log(filter);
-  console.log(String(req.query.filter));
+
   try {
     currentData.documentCount = await ToDo.find(filter).count();
-    /*     currentData.activeDocumentsCount = await ToDo.find({
+    currentData.activeDocumentsCount = await ToDo.find({
       completed: true,
-    }).count(); */
+    }).count();
     currentData.currentData = await ToDo.find(filter)
       .limit(limit)
       .skip(queryIndex)
@@ -49,13 +47,15 @@ router.post("/", async (req, res) => {
     task: req.body.task,
     completed: false,
   });
-  console.log(req.body);
+  const currentData = {};
   try {
-    const getCreatedTodo = await toDo.save();
-
+    currentData.getCreatedTodo = await toDo.save();
+    currentData.activeDocumentsCount = await ToDo.find({
+      completed: true,
+    }).count();
     res
       .status(200)
-      .send(createResponse(true, "POST Request Called", getCreatedTodo));
+      .send(createResponse(true, "POST Request Called", currentData));
   } catch {
     res.status(500).send(createResponse(false, "Internal Server Create Error"));
   }
@@ -65,10 +65,11 @@ router.post("/", async (req, res) => {
 router.patch("/:id", async (req, res) => {
   const editedTodo = req.body.task;
   const editedCompleted = req.body.completed;
-  console.log(editedTodo);
-  console.log(editedCompleted);
+  /*   console.log(editedTodo);
+  console.log(editedCompleted); */
 
   let toDo;
+  const currentData = {};
   try {
     toDo = await ToDo.findById(req.params.id);
 
@@ -79,13 +80,16 @@ router.patch("/:id", async (req, res) => {
     } else {
       throw new Error("PATCH: error with input data");
     }
-    const getModifiedTodo = await toDo.save();
+    currentData.getModifiedTodo = await toDo.save();
+    currentData.activeDocumentsCount = await ToDo.find({
+      completed: true,
+    }).count();
 
     res
       .status(200)
-      .send(createResponse(true, "PATCH Request Called", getModifiedTodo));
+      .send(createResponse(true, "PATCH Request Called", currentData));
   } catch (e) {
-    console.log(e);
+    /*     console.log(e); */
     if (toDo == null) {
       res
         .status(404)
@@ -98,15 +102,46 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
+//delete completed route
+router.delete("/", async (req, res) => {
+  const currentData = {};
+  try {
+    await ToDo.deleteMany({ completed: true });
+
+    currentData.activeDocumentsCount = await ToDo.find({
+      completed: true,
+    }).count();
+
+    if (currentData.activeDocumentsCount !== 0) {
+      throw new Error("Could not delete all todos.");
+    }
+    res
+      .status(200)
+      .send(createResponse(true, "DELETE Request Called", currentData));
+  } catch (e) {
+    console.log(e);
+    res
+      .status(500)
+      .send(
+        createResponse(false, e ? e.message : "Internal Server Deleting Error")
+      );
+  }
+});
+
 //delete route
 router.delete("/:id", async (req, res) => {
   let toDo;
+  const currentData = {};
   try {
     toDo = await ToDo.findById(req.params.id);
     await toDo.deleteOne();
+    currentData.activeDocumentsCount = await ToDo.find({
+      completed: true,
+    }).count();
 
-    res.status(200).send(createResponse(true, "DELETE Request Called"));
-    console.log(createResponse(true, "DELETE Request Called"));
+    res
+      .status(200)
+      .send(createResponse(true, "DELETE Request Called", currentData));
   } catch {
     if (toDo == null) {
       res
