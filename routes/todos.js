@@ -12,12 +12,31 @@ function createResponse(success, message, data) {
 
 //view route
 router.get("/", async (req, res) => {
+  const page = parseInt(req.query.page);
+  const limit = 2;
+
+  const filter = ((query) => {
+    if (query === "Active") return { completed: false };
+    if (query === "Completed") return { completed: true };
+    else return {};
+  })(String(req.query.filter));
+
+  const queryIndex = (page - 1) * limit;
+  const currentData = {};
+
   try {
-    const toDos = await ToDo.find({});
-    res.status(200).send(createResponse(true, "GET Request Called", toDos));
-    console.log("data sent successfully");
+    currentData.documentCount = await ToDo.find(filter).count();
+    currentData.activeDocumentsCount = await ToDo.find({
+      completed: true,
+    }).count();
+    currentData.currentData = await ToDo.find(filter)
+      .limit(limit)
+      .skip(queryIndex)
+      .exec();
+    res
+      .status(200)
+      .send(createResponse(true, "GET Request Called", currentData));
   } catch {
-    //console.error("error during display data");
     res.status(500).send(createResponse(false, "Internal Server Fetch Error"));
   }
 });
@@ -28,15 +47,16 @@ router.post("/", async (req, res) => {
     task: req.body.task,
     completed: false,
   });
-  console.log(req.body);
+  const currentData = {};
   try {
-    const getCreatedTodo = await toDo.save();
-    //console.log("created successfully");
+    currentData.getCreatedTodo = await toDo.save();
+    currentData.activeDocumentsCount = await ToDo.find({
+      completed: true,
+    }).count();
     res
       .status(200)
-      .send(createResponse(true, "POST Request Called", getCreatedTodo));
+      .send(createResponse(true, "POST Request Called", currentData));
   } catch {
-    //console.error("error saving");
     res.status(500).send(createResponse(false, "Internal Server Create Error"));
   }
 });
@@ -45,10 +65,11 @@ router.post("/", async (req, res) => {
 router.patch("/:id", async (req, res) => {
   const editedTodo = req.body.task;
   const editedCompleted = req.body.completed;
-  console.log(editedTodo);
-  console.log(editedCompleted);
+  /*   console.log(editedTodo);
+  console.log(editedCompleted); */
 
   let toDo;
+  const currentData = {};
   try {
     toDo = await ToDo.findById(req.params.id);
 
@@ -59,15 +80,17 @@ router.patch("/:id", async (req, res) => {
     } else {
       throw new Error("PATCH: error with input data");
     }
-    const getModifiedTodo = await toDo.save();
-    //console.log("updated successfully");
+    currentData.getModifiedTodo = await toDo.save();
+    currentData.activeDocumentsCount = await ToDo.find({
+      completed: true,
+    }).count();
+
     res
       .status(200)
-      .send(createResponse(true, "PATCH Request Called", getModifiedTodo));
+      .send(createResponse(true, "PATCH Request Called", currentData));
   } catch (e) {
-    console.log(e);
+    /*     console.log(e); */
     if (toDo == null) {
-      //console.error("todo does not exist");
       res
         .status(404)
         .send(createResponse(false, "ToDo Does Not Exist In Database"));
@@ -79,24 +102,52 @@ router.patch("/:id", async (req, res) => {
   }
 });
 
+//delete completed route
+router.delete("/", async (req, res) => {
+  const currentData = {};
+  try {
+    await ToDo.deleteMany({ completed: true });
+
+    currentData.activeDocumentsCount = await ToDo.find({
+      completed: true,
+    }).count();
+
+    if (currentData.activeDocumentsCount !== 0) {
+      throw new Error("Could not delete all todos.");
+    }
+    res
+      .status(200)
+      .send(createResponse(true, "DELETE Request Called", currentData));
+  } catch (e) {
+    console.log(e);
+    res
+      .status(500)
+      .send(
+        createResponse(false, e ? e.message : "Internal Server Deleting Error")
+      );
+  }
+});
+
 //delete route
 router.delete("/:id", async (req, res) => {
   let toDo;
+  const currentData = {};
   try {
-    //throw new Error("ABCD");
     toDo = await ToDo.findById(req.params.id);
     await toDo.deleteOne();
-    //console.log("success: DELETE Request Called");
-    res.status(200).send(createResponse(true, "DELETE Request Called"));
-    console.log(createResponse(true, "DELETE Request Called"));
+    currentData.activeDocumentsCount = await ToDo.find({
+      completed: true,
+    }).count();
+
+    res
+      .status(200)
+      .send(createResponse(true, "DELETE Request Called", currentData));
   } catch {
     if (toDo == null) {
-      //console.error("error: Todo Does Not Exist");
       res
         .status(404)
         .send(createResponse(false, "ToDo Does Not Exist In Database"));
     } else {
-      //console.error("error: Error Deleting ToDo");
       res
         .status(500)
         .send(createResponse(false, "Internal Server Deleting Error"));
