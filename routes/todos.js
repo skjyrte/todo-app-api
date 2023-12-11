@@ -1,6 +1,6 @@
 import express from "express";
 const router = express.Router();
-import ToDo from "../models/todo.js";
+import Todo from "../models/todo.js";
 
 function createResponse(success, message, data) {
   if (data === undefined) {
@@ -25,11 +25,11 @@ router.get("/", async (req, res) => {
   const currentData = {};
 
   try {
-    currentData.documentCount = await ToDo.find(filter).count();
-    currentData.activeDocumentsCount = await ToDo.find({
-      completed: true,
+    currentData.documentCount = await Todo.find(filter).count();
+    currentData.activeDocumentsCount = await Todo.find({
+      completed: false,
     }).count();
-    currentData.currentData = await ToDo.find(filter)
+    currentData.currentData = await Todo.find(filter)
       .limit(limit)
       .skip(queryIndex)
       .exec();
@@ -43,15 +43,15 @@ router.get("/", async (req, res) => {
 
 //create route
 router.post("/", async (req, res) => {
-  const toDo = new ToDo({
+  const toDo = new Todo({
     task: req.body.task,
     completed: false,
   });
   const currentData = {};
   try {
     currentData.getCreatedTodo = await toDo.save();
-    currentData.activeDocumentsCount = await ToDo.find({
-      completed: true,
+    currentData.activeDocumentsCount = await Todo.find({
+      completed: false,
     }).count();
     res
       .status(200)
@@ -71,7 +71,7 @@ router.patch("/:id", async (req, res) => {
   let toDo;
   const currentData = {};
   try {
-    toDo = await ToDo.findById(req.params.id);
+    toDo = await Todo.findById(req.params.id);
 
     if (editedTodo !== undefined && editedCompleted === undefined) {
       toDo.task = req.body.task;
@@ -81,8 +81,8 @@ router.patch("/:id", async (req, res) => {
       throw new Error("PATCH: error with input data");
     }
     currentData.getModifiedTodo = await toDo.save();
-    currentData.activeDocumentsCount = await ToDo.find({
-      completed: true,
+    currentData.activeDocumentsCount = await Todo.find({
+      completed: false,
     }).count();
 
     res
@@ -93,7 +93,7 @@ router.patch("/:id", async (req, res) => {
     if (toDo == null) {
       res
         .status(404)
-        .send(createResponse(false, "ToDo Does Not Exist In Database"));
+        .send(createResponse(false, "Todo Does Not Exist In Database"));
     } else {
       res
         .status(500)
@@ -106,10 +106,10 @@ router.patch("/:id", async (req, res) => {
 router.delete("/", async (req, res) => {
   const currentData = {};
   try {
-    await ToDo.deleteMany({ completed: true });
+    await Todo.deleteMany({ completed: true });
 
-    currentData.activeDocumentsCount = await ToDo.find({
-      completed: true,
+    currentData.activeDocumentsCount = await Todo.find({
+      completed: false,
     }).count();
 
     if (currentData.activeDocumentsCount !== 0) {
@@ -133,10 +133,10 @@ router.delete("/:id", async (req, res) => {
   let toDo;
   const currentData = {};
   try {
-    toDo = await ToDo.findById(req.params.id);
+    toDo = await Todo.findById(req.params.id);
     await toDo.deleteOne();
-    currentData.activeDocumentsCount = await ToDo.find({
-      completed: true,
+    currentData.activeDocumentsCount = await Todo.find({
+      completed: false,
     }).count();
 
     res
@@ -146,7 +146,7 @@ router.delete("/:id", async (req, res) => {
     if (toDo == null) {
       res
         .status(404)
-        .send(createResponse(false, "ToDo Does Not Exist In Database"));
+        .send(createResponse(false, "Todo Does Not Exist In Database"));
     } else {
       res
         .status(500)

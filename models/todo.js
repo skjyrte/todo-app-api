@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const toDoSchema = new mongoose.Schema({
+const todoSchema = new mongoose.Schema({
   task: {
     type: String,
     required: true,
@@ -11,4 +11,4 @@ const toDoSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model("ToDo", toDoSchema);
+export default mongoose.model("Todo", todoSchema);
