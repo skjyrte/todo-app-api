@@ -111,8 +111,11 @@ router.delete("/", async (req, res) => {
     currentData.activeDocumentsCount = await Todo.find({
       completed: false,
     }).count();
+    const completedDocumentsCount = await Todo.find({
+      completed: true,
+    }).count();
 
-    if (currentData.activeDocumentsCount !== 0) {
+    if (completedDocumentsCount !== 0) {
       throw new Error("Could not delete all todos.");
     }
     res
