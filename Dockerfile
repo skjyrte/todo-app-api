@@ -6,11 +6,11 @@ WORKDIR /app
 
 COPY package.json .
 
-RUN npm install
+RUN npm install --omit-dev
 
 COPY . .
 
 EXPOSE 4000
 # required for docker desktop port mapping
 
-CMD ["npm", "run", "devStart"]
+CMD ["npm", "run", "prod"]
