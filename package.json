@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "��#\u0000 \u0000t\u0000o\u0000d\u0000o\u0000-\u0000a\u0000p\u0000p\u0000-\u0000a\u0000p\u0000i\u0000\r\u0000 \u0000",
   "main": "server.js",
+  "engines": {
+    "node": "20.9.0"
+  },
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon -L server.js",
     "prod": "cross-env NODE_ENV=production node server.js"
